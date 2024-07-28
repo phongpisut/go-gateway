@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package hello.v1;
+
+import "google/api/annotations.proto";
+
+message SayHelloRequest {
+    string name = 1;
+}
+
+message SayHelloResponse {
+    string message = 1;
+}
+
+service GreeterService {
+    rpc SayHello (SayHelloRequest) returns (SayHelloResponse) {
+        option (google.api.http) = { post: "/v1/sayHello"  , body: "*"};
+    }
+}

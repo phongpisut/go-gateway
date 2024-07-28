@@ -1,0 +1,27 @@
+version: v2
+managed:
+  enabled: true
+  disable:
+    - module: buf.build/googleapis/googleapis
+  override:
+    - file_option: go_package_prefix
+      value: github.com/phongpisut/go-gateway/gen
+plugins:
+  - remote: buf.build/grpc-ecosystem/gateway:v2.20.0
+    out: gen
+    opt:
+      - paths=source_relative
+  # dependencies
+  - remote: buf.build/grpc/go
+    out: gen
+    opt:
+      - paths=source_relative
+  - remote: buf.build/protocolbuffers/go
+    out: gen
+    opt:
+      - paths=source_relative
+  - remote: buf.build/connectrpc/go
+    out: gen
+    opt: paths=source_relative
+  - remote: buf.build/grpc-ecosystem/openapiv2:v2.20.0
+    out: gen/openapiv2
