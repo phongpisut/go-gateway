@@ -4,29 +4,30 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 
-	"buf.build/gen/go/phong/concept/connectrpc/go/hello/v1/hellov1connect"
-	hello "buf.build/gen/go/phong/concept/protocolbuffers/go/hello/v1"
-	connect "connectrpc.com/connect"
+	"buf.build/gen/go/phong/concept/grpc/go/math/v1/mathv1grpc"
+	mathv1 "buf.build/gen/go/phong/concept/protocolbuffers/go/math/v1"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
 	fmt.Println("Hello, World!")
-	client := hellov1connect.NewGreeterServiceClient(
-		http.DefaultClient,
-		"http://localhost:8888",
-	)
-	res, err := client.SayHello(
-		context.Background(),
-		connect.NewRequest(&hello.SayHelloRequest{
-			Name: "Phong",
-		}),
-	)
+
+	conn, err := grpc.NewClient("localhost:8888", grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	if err != nil {
+		log.Println(err)
+	}
+	client := mathv1grpc.NewMathServiceClient(conn)
+
+	res, err := client.Add(context.Background(), &mathv1.AddRequest{Num1: 5, Num2: 10})
+
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	log.Println(res.Msg.Message, "Successfully")
+
+	log.Println(res.Sum, "Successfully")
 
 }

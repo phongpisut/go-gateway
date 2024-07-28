@@ -1,0 +1,158 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "math/v1/math.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "MathService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/add": {
+      "post": {
+        "operationId": "MathService_Add",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1AddResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1AddRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MathService"
+        ]
+      }
+    },
+    "/v1/multiply": {
+      "post": {
+        "operationId": "MathService_Multiply",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1MultiplyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1MultiplyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MathService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1AddRequest": {
+      "type": "object",
+      "properties": {
+        "num1": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "num2": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1AddResponse": {
+      "type": "object",
+      "properties": {
+        "sum": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1MultiplyRequest": {
+      "type": "object",
+      "properties": {
+        "num1": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "num2": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1MultiplyResponse": {
+      "type": "object",
+      "properties": {
+        "sum": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    }
+  }
+}

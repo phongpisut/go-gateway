@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package math.v1;
+
+import "google/api/annotations.proto";
+
+message AddRequest {
+    int32 num1 = 1;
+    int32 num2 = 2;
+}
+
+message AddResponse {
+    int32 sum = 1;
+}
+
+message MultiplyRequest {
+    int32 num1 = 1;
+    int32 num2 = 2;
+}
+
+message MultiplyResponse {
+    int32 sum = 1;
+}
+
+service MathService {
+    rpc Add (AddRequest) returns (AddResponse) {
+        option (google.api.http) = { post: "/v1/add"  , body: "*"};
+    }
+    rpc Multiply (MultiplyRequest) returns (MultiplyResponse) {
+        option (google.api.http) = { post: "/v1/multiply"  , body: "*"};
+    }
+}

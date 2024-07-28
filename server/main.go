@@ -15,10 +15,12 @@ import (
 	"github.com/soheilhy/cmux"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 
 	_ "github.com/danielgtaylor/huma/v2/formats/cbor"
 	gen "github.com/phongpisut/go-gateway/gen/hello/v1"
+	math "github.com/phongpisut/go-gateway/gen/math/v1"
 )
 
 // GreetingOutput represents the greeting operation response.
@@ -32,12 +34,16 @@ type GreetingOutput struct {
 type GreetingRequest struct {
 	Name string `path:"name" maxLength:"30" example:"world" doc:"Name to greet"`
 	Body *struct {
-		Age int `json:"age,omitempty" maxLength:"3" example:"30" doc:"Age of the person" default:"5"`
+		Age int `json:"age,omitempty" maxLength:"3" example:"30" doc:"Age of the person"`
 	}
 }
 
 type GreeterServerImpl struct {
 	gen.UnimplementedGreeterServiceServer
+}
+
+type MathServerImpl struct {
+	math.UnimplementedMathServiceServer
 }
 
 func main() {
@@ -49,6 +55,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 	reflection.Register(grpcServer)
 	gen.RegisterGreeterServiceServer(grpcServer, &GreeterServerImpl{})
+	math.RegisterMathServiceServer(grpcServer, &MathServerImpl{})
 
 	mux := runtime.NewServeMux()
 
@@ -99,9 +106,14 @@ func main() {
 
 	router.Group("/v1/*{grpc_gateway}").Any("", echo.WrapHandler(mux))
 
-	err := gen.RegisterGreeterServiceHandlerFromEndpoint(context.Background(), mux, "localhost:8888", []grpc.DialOption{grpc.WithInsecure()})
+	err := gen.RegisterGreeterServiceHandlerFromEndpoint(context.Background(), mux, "localhost:8888", []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
 
 	if err != nil {
+		sugar.Fatal(err)
+	}
+	err_math := math.RegisterMathServiceHandlerFromEndpoint(context.Background(), mux, "localhost:8888", []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
+
+	if err_math != nil {
 		sugar.Fatal(err)
 	}
 
@@ -137,5 +149,17 @@ func GreetingHandler(ctx context.Context, input *GreetingRequest) (*GreetingOutp
 func (g *GreeterServerImpl) SayHello(ctx context.Context, request *gen.SayHelloRequest) (*gen.SayHelloResponse, error) {
 	return &gen.SayHelloResponse{
 		Message: fmt.Sprintf("hello %s", request.Name),
+	}, nil
+}
+
+func (g *MathServerImpl) Add(ctx context.Context, request *math.AddRequest) (*math.AddResponse, error) {
+	return &math.AddResponse{
+		Sum: request.Num1 + request.Num2,
+	}, nil
+}
+
+func (g *MathServerImpl) Multiply(ctx context.Context, request *math.MultiplyRequest) (*math.MultiplyResponse, error) {
+	return &math.MultiplyResponse{
+		Sum: request.Num1 * request.Num2,
 	}, nil
 }
