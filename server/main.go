@@ -4,8 +4,11 @@ import (
 	"context"
 	"crypto/subtle"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
+	"sync"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humaecho"
@@ -150,6 +153,28 @@ func (g *GreeterServerImpl) SayHello(ctx context.Context, request *gen.SayHelloR
 	return &gen.SayHelloResponse{
 		Message: fmt.Sprintf("hello %s", request.Name),
 	}, nil
+}
+
+func (g *GreeterServerImpl) StreamText(request *gen.StreamTextRequest, srv gen.GreeterService_StreamTextServer) error {
+
+	var wg sync.WaitGroup
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func(count int64) {
+			defer wg.Done()
+
+			//time sleep to simulate server process time
+			time.Sleep(time.Duration(count) * time.Second)
+			resp := gen.StreamTextResponse{Message: fmt.Sprintf("Request #%s For Id:%d", request.Text, count)}
+			if err := srv.Send(&resp); err != nil {
+				log.Printf("send error %v", err)
+			}
+		}(int64(i))
+	}
+
+	wg.Wait()
+
+	return nil
 }
 
 func (g *MathServerImpl) Add(ctx context.Context, request *math.AddRequest) (*math.AddResponse, error) {

@@ -35,17 +35,22 @@ const (
 const (
 	// GreeterServiceSayHelloProcedure is the fully-qualified name of the GreeterService's SayHello RPC.
 	GreeterServiceSayHelloProcedure = "/hello.v1.GreeterService/SayHello"
+	// GreeterServiceStreamTextProcedure is the fully-qualified name of the GreeterService's StreamText
+	// RPC.
+	GreeterServiceStreamTextProcedure = "/hello.v1.GreeterService/StreamText"
 )
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
 var (
-	greeterServiceServiceDescriptor        = v1.File_hello_v1_hello_proto.Services().ByName("GreeterService")
-	greeterServiceSayHelloMethodDescriptor = greeterServiceServiceDescriptor.Methods().ByName("SayHello")
+	greeterServiceServiceDescriptor          = v1.File_hello_v1_hello_proto.Services().ByName("GreeterService")
+	greeterServiceSayHelloMethodDescriptor   = greeterServiceServiceDescriptor.Methods().ByName("SayHello")
+	greeterServiceStreamTextMethodDescriptor = greeterServiceServiceDescriptor.Methods().ByName("StreamText")
 )
 
 // GreeterServiceClient is a client for the hello.v1.GreeterService service.
 type GreeterServiceClient interface {
 	SayHello(context.Context, *connect.Request[v1.SayHelloRequest]) (*connect.Response[v1.SayHelloResponse], error)
+	StreamText(context.Context, *connect.Request[v1.StreamTextRequest]) (*connect.ServerStreamForClient[v1.StreamTextResponse], error)
 }
 
 // NewGreeterServiceClient constructs a client for the hello.v1.GreeterService service. By default,
@@ -64,12 +69,19 @@ func NewGreeterServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(greeterServiceSayHelloMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
+		streamText: connect.NewClient[v1.StreamTextRequest, v1.StreamTextResponse](
+			httpClient,
+			baseURL+GreeterServiceStreamTextProcedure,
+			connect.WithSchema(greeterServiceStreamTextMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // greeterServiceClient implements GreeterServiceClient.
 type greeterServiceClient struct {
-	sayHello *connect.Client[v1.SayHelloRequest, v1.SayHelloResponse]
+	sayHello   *connect.Client[v1.SayHelloRequest, v1.SayHelloResponse]
+	streamText *connect.Client[v1.StreamTextRequest, v1.StreamTextResponse]
 }
 
 // SayHello calls hello.v1.GreeterService.SayHello.
@@ -77,9 +89,15 @@ func (c *greeterServiceClient) SayHello(ctx context.Context, req *connect.Reques
 	return c.sayHello.CallUnary(ctx, req)
 }
 
+// StreamText calls hello.v1.GreeterService.StreamText.
+func (c *greeterServiceClient) StreamText(ctx context.Context, req *connect.Request[v1.StreamTextRequest]) (*connect.ServerStreamForClient[v1.StreamTextResponse], error) {
+	return c.streamText.CallServerStream(ctx, req)
+}
+
 // GreeterServiceHandler is an implementation of the hello.v1.GreeterService service.
 type GreeterServiceHandler interface {
 	SayHello(context.Context, *connect.Request[v1.SayHelloRequest]) (*connect.Response[v1.SayHelloResponse], error)
+	StreamText(context.Context, *connect.Request[v1.StreamTextRequest], *connect.ServerStream[v1.StreamTextResponse]) error
 }
 
 // NewGreeterServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -94,10 +112,18 @@ func NewGreeterServiceHandler(svc GreeterServiceHandler, opts ...connect.Handler
 		connect.WithSchema(greeterServiceSayHelloMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
+	greeterServiceStreamTextHandler := connect.NewServerStreamHandler(
+		GreeterServiceStreamTextProcedure,
+		svc.StreamText,
+		connect.WithSchema(greeterServiceStreamTextMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/hello.v1.GreeterService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case GreeterServiceSayHelloProcedure:
 			greeterServiceSayHelloHandler.ServeHTTP(w, r)
+		case GreeterServiceStreamTextProcedure:
+			greeterServiceStreamTextHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -109,4 +135,8 @@ type UnimplementedGreeterServiceHandler struct{}
 
 func (UnimplementedGreeterServiceHandler) SayHello(context.Context, *connect.Request[v1.SayHelloRequest]) (*connect.Response[v1.SayHelloResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("hello.v1.GreeterService.SayHello is not implemented"))
+}
+
+func (UnimplementedGreeterServiceHandler) StreamText(context.Context, *connect.Request[v1.StreamTextRequest], *connect.ServerStream[v1.StreamTextResponse]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("hello.v1.GreeterService.StreamText is not implemented"))
 }

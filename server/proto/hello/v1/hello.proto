@@ -12,8 +12,17 @@ message SayHelloResponse {
     string message = 1;
 }
 
+message StreamTextRequest {
+    string text = 1;
+}
+
+message StreamTextResponse {
+    string message = 1;
+}
+
 service GreeterService {
     rpc SayHello (SayHelloRequest) returns (SayHelloResponse) {
         option (google.api.http) = { post: "/v1/sayHello"  , body: "*"};
     }
+    rpc StreamText (StreamTextRequest) returns (stream StreamTextResponse) {}
 }

@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	GreeterService_SayHello_FullMethodName = "/hello.v1.GreeterService/SayHello"
+	GreeterService_SayHello_FullMethodName   = "/hello.v1.GreeterService/SayHello"
+	GreeterService_StreamText_FullMethodName = "/hello.v1.GreeterService/StreamText"
 )
 
 // GreeterServiceClient is the client API for GreeterService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GreeterServiceClient interface {
 	SayHello(ctx context.Context, in *SayHelloRequest, opts ...grpc.CallOption) (*SayHelloResponse, error)
+	StreamText(ctx context.Context, in *StreamTextRequest, opts ...grpc.CallOption) (GreeterService_StreamTextClient, error)
 }
 
 type greeterServiceClient struct {
@@ -47,11 +49,45 @@ func (c *greeterServiceClient) SayHello(ctx context.Context, in *SayHelloRequest
 	return out, nil
 }
 
+func (c *greeterServiceClient) StreamText(ctx context.Context, in *StreamTextRequest, opts ...grpc.CallOption) (GreeterService_StreamTextClient, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &GreeterService_ServiceDesc.Streams[0], GreeterService_StreamText_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &greeterServiceStreamTextClient{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type GreeterService_StreamTextClient interface {
+	Recv() (*StreamTextResponse, error)
+	grpc.ClientStream
+}
+
+type greeterServiceStreamTextClient struct {
+	grpc.ClientStream
+}
+
+func (x *greeterServiceStreamTextClient) Recv() (*StreamTextResponse, error) {
+	m := new(StreamTextResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // GreeterServiceServer is the server API for GreeterService service.
 // All implementations must embed UnimplementedGreeterServiceServer
 // for forward compatibility
 type GreeterServiceServer interface {
 	SayHello(context.Context, *SayHelloRequest) (*SayHelloResponse, error)
+	StreamText(*StreamTextRequest, GreeterService_StreamTextServer) error
 	mustEmbedUnimplementedGreeterServiceServer()
 }
 
@@ -61,6 +97,9 @@ type UnimplementedGreeterServiceServer struct {
 
 func (UnimplementedGreeterServiceServer) SayHello(context.Context, *SayHelloRequest) (*SayHelloResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
+}
+func (UnimplementedGreeterServiceServer) StreamText(*StreamTextRequest, GreeterService_StreamTextServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamText not implemented")
 }
 func (UnimplementedGreeterServiceServer) mustEmbedUnimplementedGreeterServiceServer() {}
 
@@ -93,6 +132,27 @@ func _GreeterService_SayHello_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GreeterService_StreamText_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(StreamTextRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(GreeterServiceServer).StreamText(m, &greeterServiceStreamTextServer{ServerStream: stream})
+}
+
+type GreeterService_StreamTextServer interface {
+	Send(*StreamTextResponse) error
+	grpc.ServerStream
+}
+
+type greeterServiceStreamTextServer struct {
+	grpc.ServerStream
+}
+
+func (x *greeterServiceStreamTextServer) Send(m *StreamTextResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // GreeterService_ServiceDesc is the grpc.ServiceDesc for GreeterService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -105,6 +165,12 @@ var GreeterService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _GreeterService_SayHello_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "StreamText",
+			Handler:       _GreeterService_StreamText_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "hello/v1/hello.proto",
 }

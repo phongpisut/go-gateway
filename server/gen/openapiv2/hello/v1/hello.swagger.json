@@ -93,6 +93,14 @@
           "type": "string"
         }
       }
+    },
+    "v1StreamTextResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
     }
   }
 }
