@@ -7,9 +7,9 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"sync"
 	"time"
 
+	"github.com/alitto/pond"
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humaecho"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -137,6 +137,8 @@ func main() {
 
 	m.Serve()
 
+	zap.L().Info("Server started on :8888")
+
 }
 
 func GreetingHandler(ctx context.Context, input *GreetingRequest) (*GreetingOutput, error) {
@@ -157,23 +159,21 @@ func (g *GreeterServerImpl) SayHello(ctx context.Context, request *gen.SayHelloR
 
 func (g *GreeterServerImpl) StreamText(request *gen.StreamTextRequest, srv gen.GreeterService_StreamTextServer) error {
 
-	var wg sync.WaitGroup
-	for i := 0; i < 10; i++ {
-		wg.Add(1)
-		go func(count int64) {
-			defer wg.Done()
+	pool := pond.New(10, 1000)
 
-			//time sleep to simulate server process time
-			time.Sleep(time.Duration(count) * time.Second)
-			resp := gen.StreamTextResponse{Message: fmt.Sprintf("Request #%s For Id:%d", request.Text, count)}
+	for i := 0; i < 10; i++ {
+		n := i
+		pool.Submit(func() {
+			time.Sleep(time.Duration(3) * time.Second)
+			resp := gen.StreamTextResponse{Message: fmt.Sprintf("Request #%s TaskID :%d", request.Text, n)}
 			if err := srv.Send(&resp); err != nil {
 				log.Printf("send error %v", err)
 			}
-		}(int64(i))
+		})
+
 	}
-
-	wg.Wait()
-
+	pool.StopAndWait()
+	fmt.Println("Task success : 🚀")
 	return nil
 }
 

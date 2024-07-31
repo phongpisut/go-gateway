@@ -17,7 +17,10 @@ require (
 )
 
 require (
+	github.com/alitto/pond v1.9.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.6.0 // indirect
+	github.com/gammazero/deque v0.2.0 // indirect
+	github.com/gammazero/workerpool v1.1.3 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
