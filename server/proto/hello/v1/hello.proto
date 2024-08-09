@@ -5,24 +5,27 @@ package hello.v1;
 import "google/api/annotations.proto";
 
 message SayHelloRequest {
-    string name = 1;
+  string name = 1;
 }
 
 message SayHelloResponse {
-    string message = 1;
+  string message = 1;
 }
 
 message StreamTextRequest {
-    string text = 1;
+  string text = 1;
 }
 
 message StreamTextResponse {
-    string message = 1;
+  string message = 1;
 }
 
 service GreeterService {
-    rpc SayHello (SayHelloRequest) returns (SayHelloResponse) {
-        option (google.api.http) = { post: "/v1/sayHello"  , body: "*"};
-    }
-    rpc StreamText (StreamTextRequest) returns (stream StreamTextResponse) {}
+  rpc SayHello(SayHelloRequest) returns (SayHelloResponse) {
+    option (google.api.http) = {
+      post: "/v1/sayHello"
+      body: "*"
+    };
+  }
+  rpc StreamText(StreamTextRequest) returns (stream StreamTextResponse) {}
 }
