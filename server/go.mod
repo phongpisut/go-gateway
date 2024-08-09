@@ -6,6 +6,7 @@ toolchain go1.22.0
 
 require (
 	connectrpc.com/connect v1.16.2
+	github.com/alitto/pond v1.9.1
 	github.com/danielgtaylor/huma/v2 v2.19.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.21.0
 	github.com/labstack/echo/v4 v4.12.0
@@ -17,22 +18,17 @@ require (
 )
 
 require (
-	github.com/alitto/pond v1.9.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.6.0 // indirect
-	github.com/gammazero/deque v0.2.0 // indirect
-	github.com/gammazero/workerpool v1.1.3 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/panjf2000/ants/v2 v2.10.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.24.0 // indirect
 	golang.org/x/net v0.26.0 // indirect
-	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/time v0.5.0 // indirect

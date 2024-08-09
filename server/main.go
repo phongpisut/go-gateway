@@ -159,12 +159,14 @@ func (g *GreeterServerImpl) SayHello(ctx context.Context, request *gen.SayHelloR
 
 func (g *GreeterServerImpl) StreamText(request *gen.StreamTextRequest, srv gen.GreeterService_StreamTextServer) error {
 
-	pool := pond.New(10, 1000)
+	pool := pond.New(5, 1000)
+
+	zap.L().Info("Task Start : 🚀")
 
 	for i := 0; i < 10; i++ {
 		n := i
 		pool.Submit(func() {
-			time.Sleep(time.Duration(3) * time.Second)
+			time.Sleep(5 * time.Second)
 			resp := gen.StreamTextResponse{Message: fmt.Sprintf("Request #%s TaskID :%d", request.Text, n)}
 			if err := srv.Send(&resp); err != nil {
 				log.Printf("send error %v", err)
