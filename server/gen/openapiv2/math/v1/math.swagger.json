@@ -120,10 +120,6 @@
         "num2": {
           "type": "integer",
           "format": "int32"
-        },
-        "num3": {
-          "type": "integer",
-          "format": "int32"
         }
       }
     },
